@@ -35,6 +35,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: pnpm run build
 
       - name: Rename HTML file for GitHub Pages

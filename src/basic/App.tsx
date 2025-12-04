@@ -6,17 +6,35 @@ import { cartModel } from './models/cart';
 import { initialProducts } from './constants';
 import { useCoupons } from './hooks/useCoupons';
 
+// localStorage 안전 접근 헬퍼
+const getLocalStorageItem = <T,>(key: string, defaultValue: T): T => {
+  try {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return defaultValue;
+    }
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (error) {
+    console.error(`Error loading localStorage key "${key}":`, error);
+  }
+  return defaultValue;
+};
+
+const setLocalStorageItem = <T,>(key: string, value: T): void => {
+  try {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+  } catch (error) {
+    console.error(`Error saving localStorage key "${key}":`, error);
+  }
+};
+
 const App = () => {
   const [products, setProducts] = useState<ProductWithUI[]>(() => {
-    const saved = localStorage.getItem('products');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return initialProducts;
-      }
-    }
-    return initialProducts;
+    return getLocalStorageItem('products', initialProducts);
   });
 
   const [isAdmin, setIsAdmin] = useState(false);
@@ -96,7 +114,7 @@ const App = () => {
   }, [cart]);
 
   useEffect(() => {
-    localStorage.setItem('products', JSON.stringify(products));
+    setLocalStorageItem('products', products);
   }, [products]);
 
   useEffect(() => {
